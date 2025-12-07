@@ -2,18 +2,24 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 
-# Create your models here.
+
 class monitored_instance(models.Model):
     name = models.CharField(max_length=100)
     base_url = models.CharField(max_length=255)
-    heartbeat_path = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
     created_at = models.DateField()
     updated_at = models.DateField()
 
+    class Meta:
+        verbose_name = 'monitored instance'
+        verbose_name_plural = 'monitored instances'
+
+    def __str__(self):
+        return self.name
+
 
 class moodle_heartbeat(models.Model):
-    monitored_instance = models.ForeignKey(monitored_instance, related_name='moodle_heartbeats', on_delete=models.SET_NULL)
+    monitored_instance = models.ForeignKey(monitored_instance, related_name='moodle_heartbeats', on_delete=models.SET_NULL, null=True)
     disk_total_bytes = models.BigIntegerField()
     disk_used_bytes = models.BigIntegerField()
     disk_free_bytes = models.BigIntegerField()
@@ -29,11 +35,17 @@ class moodle_heartbeat(models.Model):
     moodle_release = models.CharField(max_length=100)
     cron_last_run_timestamp = models.FloatField()
     cron_expected_frequency_minutes = models.IntegerField()
+    collected_at = models.DateTimeField(default=timezone.now)
+    system_timestamp = models.DateTimeField()
+
+    class Meta:
+        verbose_name = 'moodle-heartbeat'
+        verbose_name_plural = 'moodle-heartbeats'
 
 
 class alert(models.Model):
     server_name = models.CharField()
-    monitored_instance = models.ForeignKey(monitored_instance, related_name='alerts', on_delete=models.SET_NULL)
+    monitored_instance = models.ForeignKey(monitored_instance, related_name='alerts', on_delete=models.SET_NULL, null=True)
     alert_type = models.CharField()
     message = models.CharField()
     severity = models.CharField
@@ -47,8 +59,14 @@ class alert(models.Model):
 
     def __str__(self):
         return self.server_name
-    
-class user(AbstractUser):
-    is_staff = None
-    is_active = None
-    date_joined = None
+
+
+class User(AbstractUser):
+    last_login = None
+
+    class Meta:
+        verbose_name = 'Usuario'
+        verbose_name_plural = 'Usuarios'
+
+    def __str__(self):
+        return '{}-{}'.format(self.first_name, self.last_name)
