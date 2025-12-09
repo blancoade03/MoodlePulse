@@ -1,3 +1,7 @@
 django
-djangorestframework 
+djangorestframework
 psycopg2
+djangorestframework-simplejwt
+celery
+celery[redis]
+requests
